@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     GLOBAL CHILD WELFARE DASHBOARD — v9 (EMERALD EDITION)
+     Built by: Mohd Arshan Siddiqui
+     Theme: emerald green & black · gold corner linings ✨
+     v9: full re-theme · gold corner brackets via CSS
+         pseudo-elements · all v8 features & fixes retained
+     ============================================================ -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The State of the World's Children — Data Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌍</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#020806; --card:#071710; --border:rgba(52,211,153,0.20);
+      --text:#e9f6ef; --muted:#8fae9f;
+      --accent:#34d399; --accent-dim:rgba(52,211,153,.10);
+      --gold:#d4af37;
+      --good:#4ade80; --bad:#ff6b6b; --neutral:#8fae9f;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;overflow-x:hidden;min-height:100vh;}
+    .glow{position:fixed;border-radius:50%;filter:blur(130px);opacity:.20;z-index:-1;}
+    .glow-1{width:500px;height:500px;background:#059669;top:-160px;right:-120px;}
+    .glow-2{width:450px;height:450px;background:#065f46;bottom:-180px;left:-140px;}
+    ::-webkit-scrollbar{width:10px;} ::-webkit-scrollbar-track{background:#020806;}
+    ::-webkit-scrollbar-thumb{background:#1c4531;border-radius:8px;}
+
+    .hero{text-align:center;padding:56px 24px 20px;animation:fadeUp .7s ease both;}
+    .badge{display:inline-block;font-size:.72rem;letter-spacing:1.5px;color:var(--accent);border:1px solid rgba(52,211,153,.35);background:var(--accent-dim);padding:7px 16px;border-radius:999px;margin-bottom:18px;}
+    .hero h1{font-size:clamp(1.8rem,5vw,3.1rem);font-weight:800;line-height:1.12;margin-bottom:12px;}
+    .hero h1 span{color:var(--accent);}
+    .hero p{color:var(--muted);max-width:640px;margin:0 auto;font-size:1rem;}
+
+    .crisis-open-btn{
+      display:inline-block;margin:22px auto 8px;padding:14px 28px;font-family:inherit;
+      font-size:.95rem;font-weight:800;letter-spacing:.5px;color:#04130c;cursor:pointer;
+      background:linear-gradient(135deg,#34d399,#059669);border:none;border-radius:999px;
+      box-shadow:0 0 30px rgba(52,211,153,.45);transition:transform .2s, box-shadow .2s;}
+    .crisis-open-btn:hover{transform:translateY(-3px);box-shadow:0 0 45px rgba(52,211,153,.7);}
+
+    .container{max-width:1150px;margin:0 auto;padding:24px;}
+    .controls{text-align:center;margin:4px 0 18px;animation:fadeUp .7s .1s ease both;}
+    .controls label{font-weight:600;margin-right:10px;color:var(--muted);}
+    select{font-family:inherit;font-size:1rem;font-weight:600;padding:12px 18px;border-radius:14px;max-width:90vw;background:#071710;color:var(--text);border:1px solid var(--border);cursor:pointer;outline:none;transition:border-color .2s;}
+    select:hover,select:focus{border-color:var(--accent);}
+
+    .insight{max-width:920px;margin:0 auto 22px;text-align:center;font-size:.98rem;background:var(--accent-dim);border:1px solid rgba(52,211,153,.3);border-radius:16px;padding:14px 22px;animation:fadeUp .7s .15s ease both;}
+    .insight strong{color:var(--accent);}
+
+    .section-title{font-size:1.2rem;font-weight:800;margin:32px 0 12px;display:flex;align-items:center;gap:10px;animation:fadeUp .7s ease both;}
+    .section-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(212,175,55,.55),transparent);}
+    .plan-note,.src-note{font-size:.75rem;color:var(--muted);margin:-6px 0 14px;}
+
+    /* ===== GOLD CORNER LININGS =====
+       Each card wears gold brackets on its top-left and
+       bottom-right corners — drawn with pseudo-elements. */
+    .card,.chart-card,.work-card,.lens{position:relative;}
+    .card::before,.chart-card::before,.work-card::before,.lens::before{
+      content:"";position:absolute;top:-2px;left:-2px;width:26px;height:26px;
+      border-top:2px solid var(--gold);border-left:2px solid var(--gold);
+      border-top-left-radius:18px;pointer-events:none;}
+    .card::after,.chart-card::after,.work-card::after,.lens::after{
+      content:"";position:absolute;bottom:-2px;right:-2px;width:26px;height:26px;
+      border-bottom:2px solid var(--gold);border-right:2px solid var(--gold);
+      border-bottom-right-radius:18px;pointer-events:none;}
+
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:22px;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;transition:transform .25s,border-color .25s;animation:fadeUp .6s ease both;}
+    .card:nth-child(1){animation-delay:.15s}.card:nth-child(2){animation-delay:.22s}.card:nth-child(3){animation-delay:.29s}.card:nth-child(4){animation-delay:.36s}
+    .card:hover{transform:translateY(-5px);border-color:rgba(52,211,153,.55);}
+    .card-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;border-radius:12px;background:var(--accent-dim);margin-bottom:12px;}
+    .card-label{font-size:.8rem;color:var(--muted);margin-bottom:6px;}
+    .card-value{font-size:2rem;font-weight:800;letter-spacing:-1px;}
+    .card-sub{font-size:.78rem;margin-top:6px;font-weight:600;}
+    .good{color:var(--good)}.bad{color:var(--bad)}.neutral{color:var(--neutral)}
+
+    .charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:14px;margin-bottom:14px;}
+    .chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;animation:fadeUp .6s .35s ease both;}
+    .chart-card h3{font-size:.92rem;margin-bottom:14px;}
+    .chart-wrap{position:relative;height:330px;}
+    .chart-wrap-sm{position:relative;height:260px;}
+    .chart-note{font-size:.72rem;color:var(--muted);margin-top:10px;}
+
+    .twins{display:flex;flex-wrap:wrap;gap:10px;}
+    .twin-chip{background:#0b2118;border:1px solid var(--border);border-radius:999px;padding:9px 16px;font-size:.85rem;font-weight:600;cursor:pointer;transition:border-color .2s, transform .2s;}
+    .twin-chip:hover{border-color:var(--accent);transform:translateY(-2px);}
+    .twin-chip small{color:var(--muted);font-weight:400;margin-left:6px;}
+
+    .rank-tools{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+    .rank-tools input{flex:1;min-width:200px;font-family:inherit;font-size:.9rem;padding:11px 16px;border-radius:12px;background:#071710;color:var(--text);border:1px solid var(--border);outline:none;}
+    .rank-tools input:focus{border-color:var(--accent);}
+    .rank-tools span{font-size:.8rem;color:var(--muted);align-self:center;}
+    .table-scroll{overflow:auto;max-height:480px;border:1px solid var(--border);border-radius:14px;}
+    table{width:100%;border-collapse:collapse;font-size:.85rem;}
+    th{position:sticky;top:0;background:#0b2118;color:var(--accent);text-align:left;padding:12px 14px;cursor:pointer;user-select:none;white-space:nowrap;font-size:.78rem;letter-spacing:.5px;z-index:2;}
+    th:hover{background:#0e2a1e;}
+    td{padding:9px 14px;border-top:1px solid rgba(52,211,153,0.10);white-space:nowrap;}
+    tr.rowlink{cursor:pointer;} tr.rowlink:hover td{background:#0a2018;}
+    tr.mine td{background:rgba(52,211,153,.10);}
+
+    .hap-body{display:grid;grid-template-columns:210px 1fr;gap:26px;align-items:center;}
+    .hap-score{text-align:center;}
+    .hap-emoji{font-size:3.2rem;line-height:1;}
+    .hap-big{font-size:2.8rem;font-weight:800;margin-top:4px;}
+    .hap-big small{font-size:1rem;color:var(--muted);font-weight:400;}
+    .hap-rank{font-size:.78rem;color:var(--muted);margin-top:2px;}
+    .hap-why h4{font-size:1rem;margin-bottom:6px;}
+    .hap-why p{font-size:.87rem;color:#cfe4d8;margin-bottom:14px;}
+    .hap-chart-wrap{position:relative;height:150px;}
+
+    .works{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+    .work-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;animation:fadeUp .6s ease both;}
+    .work-card:hover{border-color:rgba(52,211,153,.55);}
+    .work-card h4{font-size:.98rem;margin:10px 0 8px;}
+    .work-card ul{list-style:none;}
+    .work-card li{font-size:.83rem;color:#cfe4d8;padding:4px 0 4px 16px;position:relative;}
+    .work-card li::before{content:"▸";position:absolute;left:0;color:var(--accent);}
+    .work-ev{font-size:.72rem;color:var(--muted);margin-top:10px;border-top:1px solid var(--border);padding-top:10px;}
+    .work-ev b{color:var(--accent);}
+
+    .sim-body{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+    .sim-sliders{display:flex;flex-direction:column;gap:22px;}
+    .sim-slider label{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-bottom:8px;}
+    .sim-slider label b{color:var(--accent);}
+    input[type=range]{width:100%;accent-color:#34d399;cursor:pointer;}
+    .sim-result{background:var(--accent-dim);border:1px solid rgba(52,211,153,.3);border-radius:14px;padding:22px;display:flex;flex-direction:column;justify-content:center;}
+    .sim-big{font-size:1.9rem;font-weight:800;}
+    .sim-big span{color:var(--accent);}
+    .sim-line{font-size:.86rem;color:#cfe4d8;margin-top:8px;}
+    .sim-disc{font-size:.68rem;color:var(--muted);margin-top:12px;}
+
+    #crisis{display:none;animation:fadeUp .5s ease both;}
+    #crisis.open{display:block;}
+    .crisis-head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;}
+    .crisis-close{font-family:inherit;font-size:.85rem;font-weight:700;color:var(--muted);background:#0b2118;border:1px solid var(--border);border-radius:999px;padding:9px 18px;cursor:pointer;}
+    .crisis-close:hover{color:var(--text);border-color:var(--accent);}
+    .helpline{margin-top:14px;background:linear-gradient(135deg,rgba(74,222,128,.10),rgba(34,197,94,.06));border:1px solid rgba(74,222,128,.35);border-radius:16px;padding:18px 22px;font-size:.88rem;}
+    .helpline b{color:var(--good);}
+    .helpline .big{font-size:1.15rem;font-weight:800;color:var(--good);display:block;margin:6px 0;}
+    .gender-lens{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+    .lens{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;}
+    .lens h5{font-size:.9rem;margin-bottom:8px;color:var(--text);}
+    .lens ul{list-style:none;}
+    .lens li{font-size:.8rem;color:#cfe4d8;padding:3px 0 3px 16px;position:relative;}
+    .lens li::before{content:"▸";position:absolute;left:0;color:var(--accent);}
+    .warn-box{margin-top:14px;background:var(--accent-dim);border:1px solid rgba(52,211,153,.3);border-radius:14px;padding:18px 20px;font-size:.87rem;color:#dcefe5;}
+    .warn-box b{color:var(--accent);}
+    .prevent-box{margin-top:14px;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.25);border-radius:14px;padding:18px 20px;font-size:.87rem;color:#dcefe5;}
+    .prevent-box b{color:var(--good);}
+
+    footer{text-align:center;font-size:.74rem;color:var(--muted);padding:40px 24px 50px;max-width:820px;margin:0 auto;}
+    footer strong{color:var(--gold);}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+    @media (max-width:640px){.charts{grid-template-columns:1fr;}.sim-body{grid-template-columns:1fr;}.hap-body{grid-template-columns:1fr;}.gender-lens{grid-template-columns:1fr;}.hero{padding-top:40px;}}
+  </style>
+</head>
+<body>
+
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+
+<div class="hero">
+  <div class="badge">📊 v9 · 71 COUNTRIES · 100% CRISIS-DATA COVERAGE</div>
+  <h1>The State of the <span>World's Children</span></h1>
+  <p>Nutrition, education, immunization, survival — and what teenagers feel about their lives.</p>
+  <button class="crisis-open-btn" onclick="toggleCrisis()">🚨 YOUTH MENTAL HEALTH CRISIS — VIEW THE DATA</button>
+</div>
+
+<div class="container">
+
+  <div class="controls">
+    <label for="countrySelect">Select a country</label>
+    <select id="countrySelect"></select>
+  </div>
+
+  <div class="insight">💡 <span id="insightText">Loading…</span></div>
+
+  <div class="stats">
+    <div class="card"><div class="card-icon">🍎</div><div class="card-label">Child Stunting (under 5)</div><div class="card-value" id="val-stunting">0</div><div class="card-sub" id="sub-stunting">—</div></div>
+    <div class="card"><div class="card-icon">📚</div><div class="card-label">Out-of-School Children (primary)</div><div class="card-value" id="val-oos">0</div><div class="card-sub" id="sub-oos">—</div></div>
+    <div class="card"><div class="card-icon">💉</div><div class="card-label">DTP3 Immunization Coverage</div><div class="card-value" id="val-dtp3">0</div><div class="card-sub" id="sub-dtp3">—</div></div>
+    <div class="card"><div class="card-icon">💔</div><div class="card-label">Under-5 Mortality (per 1,000)</div><div class="card-value" id="val-u5mr">0</div><div class="card-sub" id="sub-u5mr">—</div></div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-card">
+      <h3>🔮 2030 Stunting Forecast — linear regression, no libraries</h3>
+      <div class="chart-wrap-sm"><canvas id="fcChart"></canvas></div>
+      <div class="chart-note">Solid = data 2000–2022. Dashed = least-squares trend extended to 2030. Illustrative projection.</div>
+    </div>
+    <div class="chart-card">
+      <h3>🧬 Statistical Twins — k-nearest neighbors (5 features)</h3>
+      <div class="twins" id="twinList"></div>
+      <div class="chart-note">The 5 most similar countries across stunting, education, immunization, survival &amp; happiness. Click to jump.</div>
+    </div>
+  </div>
+
+  <div class="section-title">😊 Youth Happiness — Ages 15 to 20</div>
+  <div class="chart-card">
+    <div class="hap-body">
+      <div class="hap-score">
+        <div class="hap-emoji" id="hap-emoji">🙂</div>
+        <div class="hap-big"><span id="hap-val">0</span><small> / 10</small></div>
+        <div class="hap-rank" id="hap-rank"></div>
+      </div>
+      <div class="hap-why">
+        <h4 id="hap-title">—</h4>
+        <p id="hap-why"></p>
+        <div class="hap-chart-wrap"><canvas id="hapChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-card"><h3>⚖️ Country vs. Global Average (latest)</h3><div class="chart-wrap"><canvas id="barChart"></canvas></div></div>
+    <div class="chart-card"><h3>📈 Stunting Trend, 2000 → 2022</h3><div class="chart-wrap"><canvas id="lineChart"></canvas></div></div>
+  </div>
+
+  <div class="section-title">🔥 What The Data Proves</div>
+  <div class="charts">
+    <div class="chart-card"><h3>🏆 Fastest Improvers — stunting % cut since 2000</h3><div class="chart-wrap"><canvas id="rankChart"></canvas></div><div class="chart-note">Calculated automatically: 2000 value − 2022 value.</div></div>
+    <div class="chart-card"><h3>🔵 Immunization vs. Child Survival (every country)</h3><div class="chart-wrap"><canvas id="scatterChart"></canvas></div><div class="chart-note">Higher vaccine coverage → far fewer child deaths.</div></div>
+  </div>
+
+  <div class="section-title">🏆 Full Ranking — click a column to sort, click a row to explore</div>
+  <div class="rank-tools">
+    <input type="text" id="rankSearch" placeholder="🔍 Search a country…">
+    <span id="rankCount"></span>
+  </div>
+  <div class="table-scroll">
+    <table id="rankTable">
+      <thead><tr>
+        <th data-k="name">Country</th><th data-k="stunting">Stunting % ↓</th><th data-k="oos">Out-of-school % ↓</th>
+        <th data-k="dtp3">DTP3 % ↑</th><th data-k="u5mr">U5MR ↓</th><th data-k="h">Happiness ↓</th><th data-k="gain">2000→22 gain ↑</th>
+      </tr></thead>
+      <tbody id="rankBody"></tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🎯 Action Plan for <span id="planCountry" style="color:var(--accent)">…</span></div>
+  <div class="plan-note">Generated automatically from this country's data — its 3 weakest areas get priority interventions, plus one strength to protect.</div>
+  <div class="works" id="planGrid"></div>
+
+  <div class="section-title">🎛️ Progress Simulator — "What If They Did All Of It?"</div>
+  <div class="chart-card">
+    <div class="sim-body">
+      <div class="sim-sliders">
+        <div class="sim-slider"><label>Reduce stunting by <b><span id="lbl-stunt">10</span> pp</b></label><input type="range" id="sim-stunt" min="0" max="20" value="10"></div>
+        <div class="sim-slider"><label>Increase immunization by <b><span id="lbl-vax">10</span> pp</b></label><input type="range" id="sim-vax" min="0" max="25" value="10"></div>
+      </div>
+      <div class="sim-result">
+        <div class="sim-big" id="sim-headline">U5MR: —</div>
+        <div class="sim-line" id="sim-detail">—</div>
+        <div class="sim-disc">⚠️ Illustrative model — published global associations (~10% mortality cut per 10pp immunization; ~15% per 10pp stunting). Not a forecast.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CRISIS SECTION ================= -->
+  <section id="crisis">
+    <div class="section-title">🚨 Youth Mental Health — Suicide Data, Ages 15–29</div>
+    <div class="src-note">Source: WHO Global Health Estimates (2019–2021), UNICEF &amp; national reporting. Rates per 100,000 youth. Suicide is heavily underreported in many countries — low reported rates are floors, not facts. Handled per WHO media-reporting guidance. Helpline numbers change — verify locally via findahelpline.com before citing.</div>
+    <div class="chart-card">
+      <div class="crisis-head">
+        <h3 id="crisis-title" style="font-size:1rem">—</h3>
+        <button class="crisis-close" onclick="toggleCrisis()">✕ Close</button>
+      </div>
+
+      <div class="stats" style="margin-top:18px">
+        <div class="card"><div class="card-icon">👨</div><div class="card-label">Male youth rate /100k</div><div class="card-value" id="cv-m">—</div><div class="card-sub" id="cs-m">—</div></div>
+        <div class="card"><div class="card-icon">👩</div><div class="card-label">Female youth rate /100k</div><div class="card-value" id="cv-f">—</div><div class="card-sub" id="cs-f">—</div></div>
+        <div class="card"><div class="card-icon">📊</div><div class="card-label">Total (est.) /100k</div><div class="card-value" id="cv-t">—</div><div class="card-sub" id="cs-t">—</div></div>
+        <div class="card"><div class="card-icon">🔮</div><div class="card-label">2030 if trend continues</div><div class="card-value" id="cv-2030">—</div><div class="card-sub" id="cs-2030">—</div></div>
+      </div>
+
+      <div class="chart-wrap-sm"><canvas id="crisisChart"></canvas></div>
+      <div class="chart-note">Global youth baseline: ≈8 per 100,000 (males ≈11, females ≈6). Suicide is the <b>3rd leading cause of death</b> among 15–29 year-olds worldwide (WHO).</div>
+
+      <div class="warn-box" id="crisisWhy"><b>Why?</b> —</div>
+      <div class="prevent-box" id="crisisPrevent"><b>🛡️ What would work here:</b> —</div>
+      <div class="helpline" id="crisisHelp"></div>
+
+      <div class="gender-lens">
+        <div class="lens"><h5 id="lensMTitle">👨 Why male rates dominate almost everywhere</h5><ul id="lensM"></ul></div>
+        <div class="lens"><h5 id="lensFTitle">👩 The female pattern the averages hide</h5><ul id="lensF"></ul></div>
+      </div>
+    </div>
+
+    <div class="section-title">💚 What Actually Works — Prevention Is Possible</div>
+    <div class="works">
+      <div class="work-card"><div class="card-icon">🔒</div><h4>Means Restriction</h4>
+        <ul><li>Ban/safeguard lethal pesticides</li><li>Bridge barriers &amp; firearm safety</li><li>Package-limited medicines</li></ul>
+        <div class="work-ev"><b>Evidence:</b> Sri Lanka cut suicides ~70% after banning highly lethal pesticides — the best-documented national success.</div></div>
+      <div class="work-card"><div class="card-icon">🏫</div><h4>Schools As Safety Nets</h4>
+        <ul><li>Free counselors in secondary schools</li><li>Lower one-shot-exam stakes</li><li>Gatekeeper training for teachers</li></ul>
+        <div class="work-ev"><b>Evidence:</b> Finland cut once-high rates via school health services; Philippines' 2018 Mental Health Act mandates school programs.</div></div>
+      <div class="work-card"><div class="card-icon">📞</div><h4>Helplines &amp; Gatekeepers</h4>
+        <ul><li>24/7 crisis lines with real capacity</li><li>Peer &amp; community gatekeepers</li><li>Follow-up after attempts</li></ul>
+        <div class="work-ev"><b>Evidence:</b> France's 3114 line + follow-up care are WHO-listed core strategies.</div></div>
+      <div class="work-card"><div class="card-icon">⚖️</div><h4>Law &amp; Services</h4>
+        <ul><li>Decriminalize attempted suicide (India did, 2017)</li><li>Train general doctors in mental health</li><li>Responsible media reporting</li></ul>
+        <div class="work-ev"><b>Evidence:</b> Most low-income countries have &lt;1 psychiatrist per 100,000 people — task-shifting to trained general workers is the proven fix.</div></div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  Data: approximate values from UNICEF/WHO/World Bank Joint Malnutrition Estimates, UN IGME, UNESCO UIS (2000–2022);
+  youth happiness approximates World Happiness Report 15–24 figures; suicide data from WHO Global Health Estimates — rounded; verify before citing.
+  Helplines change — check findahelpline.com for current numbers.<br><br>
+  Designed &amp; built by <strong>Mohd Arshan Siddiqui</strong> · HTML · CSS · JavaScript · Chart.js · least-squares regression · k-NN · v9
+</footer>
+
+<script>
+/* ============================================================
+   1. CHILD WELFARE DATA — 71 countries, every one with crisis data
+   ============================================================ */
+const REASONS = {
+  nordic:"Strong welfare, free education & healthcare, high trust, and a culture that doesn't crush teens with exams. Free time, sports and part-time jobs are normal.",
+  wealthy_small:"Small, safe and rich: excellent schools and services, low corruption, strong outdoor culture — mild pressures compared to big economies.",
+  weu:"Social safety nets plus strong family ties keep teens content; worries center on jobs and climate rather than survival.",
+  anglo_hi:"Opportunity, outdoor lifestyle and social freedom make teens optimistic — though social media and living costs are growing worries.",
+  anglo_anxiety:"Wealth and freedom, but teens report loneliness, social-media pressure and anxiety about housing and jobs.",
+  family_eu:"Family dinners, tight communities and safety nets anchor teen life; the mood is calm rather than ecstatic.",
+  sea_mixed:"Rapidly improving services plus warm family and street-food social life keep spirits up, even as education pressure grows.",
+  sa_family:"Deep family bonds and community resilience buffer hardship — but exam pressure, job scarcity and early responsibilities weigh heavily.",
+  conflict:"War and insecurity have stolen normal teenage life — school, safety, friends. Survival comes before happiness.",
+  crisis:"Economic collapse crushed opportunities: jobs, imports, basics. Teens adapt with humor and hustle, but hope is eroding.",
+  community:"Famous warmth — family meals, music, festivals, faith — keeps teens smiling even where money is tight.",
+  africa_resilience:"Community, faith, music and youth culture create real joy despite tough material conditions; unemployment is the biggest dream-crusher.",
+  mena_family:"Strong extended families anchor teen life; frustration comes from youth unemployment and limited freedoms.",
+  post_soviet:"Free education and stable basics remain, but economic uncertainty and emigration of opportunity weigh on young plans.",
+  gulf_opportunity:"Young populations, new entertainment scenes and expanding opportunity — happiness is rising fast from a low base.",
+  island_community:"Island life — everyone knows everyone, ocean, festivals — delivers connection money can't buy."
+};
+
+const RAW = [
+["India","🇮🇳",35.5,4,89,29,51,4.2,"*Family support is a superpower, but teens carry intense board-exam and career pressure, comparison culture, and big dreams vs limited seats. As services improve, optimism is climbing."],
+["Pakistan","🇵🇰",40,33,83,64,42,4.1,"sa_family"],
+["Bangladesh","🇧🇩",24,13,98,28,50,4.4,"sa_family"],
+["Nepal","🇳🇵",27,7,92,28,57,4.6,"sa_family"],
+["Sri Lanka","🇱🇰",15,1,99,7,21,4.3,"crisis"],
+["Afghanistan","🇦🇫",38,40,68,55,58,1.9,"*The hardest place on earth to be a teen — and especially a teenage girl, who can no longer attend secondary school. Happiness here is survival."],
+["Kazakhstan","🇰🇿",8,2,99,10,15,5.9,"post_soviet"],
+["Uzbekistan","🇺🇿",11,4,98,16,20,5.5,"post_soviet"],
+["China","🇨🇳",5,2,99,7,21,5.4,"*Teen happiness is squeezed between the gaokao exam and sky-high expectations — yet rising cities, services and options give grounds for hope."],
+["Japan","🇯🇵",4,1,99,3,5,5.8,"*Polite, safe, high-tech — and quietly exhausted. Long school days, juku cram schools and social expectations weigh on teens; many report little free time."],
+["South Korea","🇰🇷",3,1,98,4,4,5.7,"*Teens sleep the least in the developed world. The one-shot college exam (Suneung) shapes life chances, making adolescence a marathon of study."],
+["Mongolia","🇲🇳",8,2,96,16,15,5.3,"post_soviet"],
+["Vietnam","🇻🇳",19.6,1,90,21,39,5.8,"sea_mixed"],
+["Thailand","🇹🇭",13,1,98,9,18,6.0,"sea_mixed"],
+["Malaysia","🇲🇾",8,2,98,8,15,6.0,"sea_mixed"],
+["Singapore","🇸🇬",3,1,97,3,4,6.2,"*Rich, safe, hyper-efficient — and academically relentless. Teens enjoy world-class everything but feel the pressure early."],
+["Indonesia","🇮🇩",24,4,85,21,38,5.5,"sea_mixed"],
+["Philippines","🇵🇭",26.7,5,76,26,33,5.8,"community"],
+["Turkey","🇹🇷",6,2,97,10,14,5.4,"mena_family"],
+["Iran","🇮🇷",5,2,98,13,9,4.9,"mena_family"],
+["Iraq","🇮🇶",17,9,82,24,38,4.5,"mena_family"],
+["Syria","🇸🇾",26,15,85,24,28,3.2,"conflict"],
+["Lebanon","🇱🇧",8,6,93,9,10,2.8,"*A financial collapse turned professionals into delivery drivers. Teens joke through crisis, but emigration dreams outnumber local hopes."],
+["Israel","🇮🇱",3,2,96,4,5,7.0,"*Tight-knit social networks, youth movements and family dinners keep scores high despite living with tension."],
+["Egypt","🇪🇬",13,3,93,19,30,4.8,"mena_family"],
+["Yemen","🇾🇪",45,35,70,60,50,2.5,"conflict"],
+["Sudan","🇸🇩",36,25,85,56,45,3.0,"conflict"],
+["Morocco","🇲🇦",13,5,97,18,25,4.9,"mena_family"],
+["Australia","🇦🇺",3,2,95,4,4,7.0,"anglo_hi"],
+["New Zealand","🇳🇿",3,2,96,4,4,7.0,"anglo_hi"],
+["Fiji","🇫🇯",8,3,98,18,15,5.5,"island_community"],
+["Russia","🇷🇺",5,2,97,6,9,5.6,"*Strong education and urban life, but political uncertainty and closed horizons dull teen optimism."],
+["Ukraine","🇺🇦",6,4,95,7,15,4.8,"*War turned teen years into air-raid schedules and online classes from shelters. Resilience is off the charts; so is the loss."],
+["Poland","🇵🇱",3,2,98,4,5,6.4,"family_eu"],
+["Germany","🇩🇪",2,2,96,4,3,6.7,"weu"],
+["France","🇫🇷",3,2,97,4,5,6.4,"weu"],
+["United Kingdom","🇬🇧",3,2,96,4,4,6.3,"anglo_anxiety"],
+["Ireland","🇮🇪",4,2,95,4,6,6.5,"family_eu"],
+["Italy","🇮🇹",4,2,95,3,4,6.5,"family_eu"],
+["Spain","🇪🇸",4,2,97,3,5,6.6,"family_eu"],
+["Portugal","🇵🇹",4,2,97,4,5,6.3,"family_eu"],
+["Netherlands","🇳🇱",3,2,96,4,4,7.4,"*Bikes everywhere, little homework pressure, honest parents and breakfast together — Dutch teens consistently rate their lives among the world's best."],
+["Belgium","🇧🇪",4,2,96,4,5,6.4,"weu"],
+["Sweden","🇸🇪",2,1,98,3,3,7.4,"nordic"],
+["Norway","🇳🇴",3,1,95,4,4,7.4,"nordic"],
+["Denmark","🇩🇰",3,1,95,4,4,7.6,"nordic"],
+["Finland","🇫🇮",3,1,93,3,4,7.8,"*The world champion of youth happiness: short school days, free school meals, real breaks, trusting teachers — teens get childhood AND opportunity."],
+["Iceland","🇮🇸",3,1,97,3,4,7.5,"*Tiny, safe and tight-knit: almost no poverty, youth clubs everywhere, and the world's most equal teens."],
+["Switzerland","🇨🇭",2,1,95,4,4,7.3,"wealthy_small"],
+["USA","🇺🇸",3.5,2,92,6,4,6.1,"*The world's biggest economy has lonely teens: social media, school-shooting drills, college costs and hustle culture show up in every youth survey."],
+["Canada","🇨🇦",3,2,95,5,5,6.8,"anglo_hi"],
+["Brazil","🇧🇷",7,3,79,14,11,6.1,"*Futebol on the street, samba in the blood, friends everywhere — Brazilian teens rank happy despite inequality and safety worries. Social connection is the national wealth."],
+["Mexico","🇲🇽",8,4,85,13,10,6.3,"*Family fiestas, food and warmth make Mexican teens among Latin America's happiest — insecurity and income gaps are the shadows."],
+["Colombia","🇨🇴",8,5,91,13,10,5.9,"community"],
+["Chile","🇨🇱",3,2,97,7,4,6.0,"community"],
+["Argentina","🇦🇷",7,4,95,9,8,5.9,"community"],
+["Uruguay","🇺🇾",8,4,95,7,10,6.2,"weu"],
+["Ecuador","🇪🇨",15,5,94,15,20,5.6,"community"],
+["Peru","🇵🇪",11,4,92,13,22,5.7,"community"],
+["Bolivia","🇧🇴",15,6,90,29,30,5.6,"community"],
+["Venezuela","🇻🇪",13,10,85,21,13,4.6,"*Inflation ate teen dreams, but family networks and migration remittances keep hope flickering."],
+["Cuba","🇨🇺",8,1,99,5,7,5.5,"community"],
+["Nigeria","🇳🇬",37,30,57,111,43,4.8,"*Afrobeats, hustle culture and fierce national pride keep spirits high even with unemployment and power cuts — Nigerian youth refuse to be sad."],
+["Ethiopia","🇪🇹",37,17,73,50,52,4.5,"africa_resilience"],
+["Kenya","🇰🇪",18,8,93,30,30,4.4,"africa_resilience"],
+["Ghana","🇬🇭",14,8,97,40,25,4.7,"africa_resilience"],
+["Uganda","🇺🇬",26,8,89,36,45,4.5,"africa_resilience"],
+["Tanzania","🇹🇿",32,10,85,45,45,4.6,"africa_resilience"],
+["DR Congo","🇨🇩",42,25,73,76,48,3.8,"conflict"],
+["Zimbabwe","🇿🇼",26,10,89,45,28,3.9,"crisis"],
+["South Africa","🇿🇦",27,10,85,31,26,4.9,"*Load-shedding and inequality test everyone — yet SA teens rank among Africa's happiest thanks to sports, music and mixed cultures."]
+];
+
+const YEARS = [2000, 2006, 2012, 2018, 2022];
+const GLOBAL = { stunting:22.3, oos:10, dtp3:84, u5mr:37, h:5.7 };
+const INDICATORS = {
+  stunting:{unit:"%",lowerIsBetter:true}, oos:{unit:"%",lowerIsBetter:true},
+  dtp3:{unit:"%",lowerIsBetter:false}, u5mr:{unit:"",lowerIsBetter:true}
+};
+const COUNTRIES = RAW.map(r => ({
+  name:r[0], flag:r[1],
+  current:{stunting:r[2], oos:r[3], dtp3:r[4], u5mr:r[5]},
+  s2000:r[6], h:r[7], r:r[8]
+}));
+
+/* ============================================================
+   2. SUICIDE DATA — WHO GHE-based approximations (15–29, per 100k)
+   [male, female, trend(+1/0/-1), reason, prevention, helpline]
+   ============================================================ */
+const SUICIDE = {
+"India":[15,11,1,"Exam failure is among the most-cited triggers — India's NCRB logged 13,000+ student suicides in 2022, with Kota's coaching hub as the national symbol. Boys face unemployment and 'failure shame'; girls face early marriage and family conflict. Stigma leaves most distress untreated.","India's own playbook: scale Tele-MANAS beyond metros, gatekeeper training in every school AND coaching center, and make the 2017 decriminalization widely known so fear of police stops blocking help-seeking.","Tele-MANAS 14416 (24/7, 20 languages) · Kiran 1800-599-0019"],
+"Pakistan":[6,5,0,"Officially low, reality likely higher: weak death registration, religious stigma and family concealment of self-harm. Drivers: unemployment despair, marriage disputes, and conflict trauma in Balochistan and Khyber Pakhtunkhwa.","Train the huge Lady Health Worker network to spot distress (they already enter rural homes), add counseling to schools, and enforce media reporting guidelines — most outlets still sensationalize.","Umang +92 311 7786264 · emergency 15"],
+"Bangladesh":[4.5,4.5,-1,"One of the few countries where young female rates rival male: dowry abuse, early marriage and domestic violence are leading triggers. Elite-college academic pressure mirrors India's exam culture.","Fund and scale the Kaan Pete Roi volunteer model nationally, implement the 2022 Mental Health Act's community services, and target dowry-violence hotspots with family mediation.","Emergency 999 · findahelpline.com (services limited)"],
+"Nepal":[20,11,-1,"Among Asia's highest youth rates: easy access to lethal pesticides in farming households, out-migration separating families, and layered post-earthquake and post-conflict trauma. Rural youth are hit hardest.","Nepal's proven lever is means restriction — locked pesticide storage — plus training Female Community Health Volunteers in psychological first aid and school programs in the poorest provinces.","TUTH Suicide Hotline 9840021600 · Health Hotline 1166"],
+"Sri Lanka":[12,8,-1,"The world's best-documented turnaround: banning highly lethal pesticides in the 1990s–2000s helped cut suicide rates roughly 70%. The remaining burden: alcohol misuse among men and post-2022 economic-collapse despair.","Keep tightening pesticide bans, protect the crisis generation with job programs, and expand Sumithrayo's volunteer network beyond Colombo into the plantation districts.","Sumithrayo 0112 682 682 · CCCline 1333"],
+"Afghanistan":[11,5,0,"Four decades of war, collapsed services and — since 2021 — girls barred from secondary school: a generation of teenage girls locked out of education, friendships and hope. Reporting is minimal; despair is not.","What remains: telehealth counseling via NGOs, underground girls' education networks as social lifelines, and keeping international crisis funding alive — prevention needs a functioning society first.","No national line · findahelpline.com"],
+"China":[6,5,-1,"Rates fell sharply from the 1990s peak — when rural young women's pesticide access drove an epidemic — a rare public-health success story. Today's drivers: gaokao pressure, urban isolation, and 'left-behind' children in the countryside.","Sustain rural pesticide controls, expand the new national hotline's reach, loosen the single-exam pathway's stakes with vocational-route respect, and keep school counselors mandatory in every province.","National Mental Health Hotline 12356 · Beijing Crisis Line 010-82951332"],
+"Japan":[17,9,-1,"Hidden distress behind achievement: long school days, juku cram culture, hikikomori isolation and salaryman burnout. Male rates ~2× female — and September 1st (school return) is a known spike date for teen attempts.","Continue school-counseling expansion, gatekeeper programs in workplaces, and enforce Japan's suicide-prevention law's youth-specific provisions — the legal framework exists; youth targeting is new.","Inochi no Denwa 0570-783-556 · TELL Lifeline 03-5774-0992 (English)"],
+"South Korea":[25,17,-1,"The OECD's highest youth rate: the one-shot Suneung exam shapes entire life paths, rigid hierarchy punishes failure, and sleep is rationed. A slow decline has begun — but academic pressure remains the core engine.","Expand multi-pathway university admissions (already growing), protect teen sleep with school start-time reform, and push counseling uptake — Korean teens' help-seeking remains among the OECD's lowest.","109 (unified 24/7 line)"],
+"Mongolia":[28,10,-1,"Historically among the world's highest: harsh rural isolation, alcohol availability, and the post-1990 transition shock that hollowed out purpose and services. Herder families' teens face loneliness at scale.","Telehealth for remote districts, alcohol-policy enforcement, and school-based screening — Ulaanbaatar's services must reach the countryside to move the national number.","Emergency 102 · findahelpline.com"],
+"Vietnam":[7,5,-1,"Rapid development with thin mental-health services: intense academic pressure in Hanoi and Ho Chi Minh City, stigma framing distress as family shame, and persisting rural pesticide access.","Train Vietnam's vast commune health network in basic counseling, keep pesticide restrictions, and pilot school screening in the two megacities first.","Emergency 115 · findahelpline.com (limited)"],
+"Thailand":[13,6,-1,"Rural debt, family separation from urban migration, and pesticide access push rates above regional neighbors — despite the famous warmth. Male farmers are the highest-risk group.","Scale the 1323 hotline nationally (it works), treat farmer debt relief as literal suicide prevention, and continue pesticide bans.","Mental Health Hotline 1323 · Samaritans 02-113-6789"],
+"Malaysia":[9,4,0,"Officially moderate with underreporting; drivers: intense academic streaming and exam pressure (SPM culture), youth unemployment, and rising social-media comparison. Stigma frames distress as family shame, delaying treatment.","Scale the Talian HEAL line's capacity, add counselors under the school transformation program, and run faith-leader gatekeeper training — mosque networks offer unmatched reach.","Talian HEAL 15555 · Befrienders KL 03-7627 2929"],
+"Singapore":[8,6,0,"Rich and safe — and academically relentless: streaming stress, privacy-driven isolation and shame culture. Strong services keep rates moderate; young males remain the highest-risk group.","Continue the 2023–2027 national mental-health strategy, expand peer support in schools and National Service, and build credibility for non-academic pathways via SkillsFuture.","SOS Hotline 1767 (24/7)"],
+"Indonesia":[5.5,3.5,0,"Officially moderate with heavy underreporting across a 17,000-island archipelago. Drivers: academic pressure, youth unemployment, and rising social-media comparison in one of the world's youngest large populations.","Scale the 119 ext 8 hotline, train religious leaders as gatekeepers (a uniquely strong Indonesian lever), and build community mental-health posts outside Java.","SEJIWA Hotline 119 ext 8 · emergency 112"],
+"Philippines":[10,5,1,"One of the world's fastest-RISING youth rates: intense social media, OFW parent separation, typhoon trauma and thin services. Hope exists — the 2018 Mental Health Act already mandates school programs.","Fund what the Mental Health Act already promises (implementation is the battle), hire school counselors at the law's ratio, and build telehealth for the islands.","NCMH Crisis 1553 · HOPE Line (02) 8804-4673"],
+"Turkey":[9,4,0,"Underreported: drivers include the 2023 earthquake's generational trauma, intense university-exam pressure, and the southeast's conflict legacy. Youth unemployment exceeds 20%.","Earthquake-trauma programs at massive scale, ALO 183 capacity, and exam-reform pressure reduction.","ALO 183 Social Support Line · emergency 112"],
+"Iran":[11,5,0,"Sanctions-economy despair, unemployment that mocks ambitions, and — uniquely — young female rates elevated by restricted autonomy. Extreme cases document the depth of the crisis.","Fund Iran's skilled-but-underused psychologist workforce, expand telehealth, and treat women's autonomy measures as literal prevention.","Social Emergency 1480 · 123"],
+"Iraq":[6,4,0,"Post-conflict trauma at scale, displacement camps, and near-zero psychiatric infrastructure outside Baghdad. Underreporting is extreme; gender-based violence compounds the risk.","WHO-supported primary-care mental health (the mhGAP model works in Iraq), camp-based psychosocial programs, and telehealth pilots.","No national line · emergency 112 · findahelpline.com"],
+"Syria":[9,5,0,"A generation raised inside war: bombed schools, lost friends, displaced families. Rates are estimates at best — the system that would measure and treat barely functions.","Humanitarian psychosocial programming at scale, diaspora telehealth networks, and post-conflict service planning starting now.","No national line · findahelpline.com (humanitarian services)"],
+"Lebanon":[8,4,0,"Crisis stacked on crisis: financial collapse, Beirut-blast trauma, the world's highest per-capita refugee burden, and mass youth emigration. Embrace's line is a genuine lifeline.","Fund Embrace sustainably, school screening for the blast and crisis cohorts, and job programs — despair here is economic at its root.","Embrace Lifeline 1564 (24/7)"],
+"Israel":[8,4,0,"Strong services and dense social cohesion protect; post-October-7 trauma exposed an entire teen generation to mass violence. Reservist-parent absence and sirens reset the cohort's anxiety baseline.","Scale the mass-trauma response already deploying, reinforce school counseling, and monitor reservist families' teens.","ERAN 1201 (24/7)"],
+"Egypt":[3.5,2.5,0,"Officially low — stigma and weak registration hide reality. Religious and family structures protect; Thanaweya Amma exam pressure and unemployment distress are real and undercounted.","Expand the national mental-health line's reach, train mosque and church leaders as gatekeepers (real cultural leverage), and reduce single-exam stakes.","Mental Health Hotline 08008880700"],
+"Yemen":[8,4.5,0,"War, famine and cholera have broken every system; mental health ranks last in a triage reality. Child marriage rose with poverty — girls' risk compounds year by year.","Humanitarian Mental Health & Psychosocial Support (MHPSS) is the only channel — funded as life-saving, because it is.","No national line · findahelpline.com (humanitarian)"],
+"Sudan":[8,4.5,0,"War since 2023: millions displaced, famine, system collapse. Whatever baseline existed is buried under catastrophe — measurement itself has stopped.","Humanitarian MHPSS in displacement camps is the only channel; diaspora telehealth fills gaps; peace is the upstream intervention.","No national line · emergency 999 · findahelpline.com"],
+"Morocco":[6,3.5,0,"Underreported: rural poverty, female early-marriage distress, and youth unemployment in the Rif and interior regions. Services concentrate in Rabat and Casablanca.","Primary-care mental-health integration (WHO mhGAP), rural school programs, and follow-through on 2023 earthquake trauma support.","Emergency 19 · findahelpline.com (limited)"],
+"Kazakhstan":[22,7,-1,"Fell from among the world's highest (the post-Soviet pattern) but remains elevated: rural-urban divides, alcohol, and hidden adolescent distress in a hierarchical culture.","Telehealth for remote regions, alcohol enforcement, and expansion of the youth-center network.","Child Helpline 150 · emergency 112"],
+"Uzbekistan":[8,4,0,"Officially moderate; the real picture is clouded by underreporting. Drivers: labor-emigration family separation, regional poverty, and stigma framing distress as weakness.","Community screening through mahalla (neighborhood) networks — a genuine cultural asset — plus introducing school counselors.","Emergency 101/112 · findahelpline.com (limited)"],
+"Australia":[16,6,1,"Climbing over the past decade: social media, housing costs, service waitlists and regional gaps — Aboriginal and Torres Strait Islander youth face rates multiples of the national average. Male rates ~2.5× female.","Expand headspace youth centers and cut waitlists, maintain means-restriction via firearm laws, and fund Indigenous-community-LED programs — the only kind that demonstrably work there.","Lifeline 13 11 14 · emergency 000"],
+"New Zealand":[24,11,1,"Among the OECD's highest youth rates: bullying, deep inequities — Māori and Pasifika youth carry multiples of the average — and rural isolation. Youth rates rose even as adult rates fell.","Whānau-centered (family-based) Māori-led services, serious anti-bullying investment, means-restriction, and fixing the youth mental-health workforce shortage.","Need to talk? 1737 (free, 24/7)"],
+"Fiji":[16,8,0,"Pacific rates run high: pesticide and pharmaceutical access in small island communities, cyclone displacement, and tight-knit communities where 'family shame' silences help-seeking. Youth out-migration drains role models.","Means restriction (safe pesticide storage), church-and-chief gatekeeper networks (traditional structures carry real authority), and school programs built with local communities.","Lifeline Fiji 132454 · emergency 911"],
+"Russia":[24,6,-1,"Sharply down from the 1990s–2000s catastrophe, but still high: alcohol, economic uncertainty, and 'boys don't talk' norms keep male rates ~4× female. Youth carry the transition's legacy.","Continue alcohol pricing policy (it demonstrably worked), maintain the school psychologist network, and monitor the plateau — decline is real but slowing.","All-Russian Children's Helpline 8-800-2000-122"],
+"Ukraine":[18,4.5,0,"War multiplies every risk: trauma, displacement, lost peers, father-absence at the front. Pre-war reforms were cutting rates; the full wartime toll is still being measured — and services are stretched thin.","Scale Ukraine's impressive wartime digital mental-health services, veteran-family programs, and child-trauma specialists for millions of displaced youth.","Lifeline Ukraine 7333 (24/7)"],
+"Poland":[15,3.5,0,"Male youth rates are among the EU's highest — masculinity norms and thin youth services; female rates are comparatively very low. Church-and-family framing slows open discussion.","Keep funding the 2022–23 school-psychologist hiring wave, run male-targeted campaigns, and expand 116 123 capacity.","116 123 (crisis line)"],
+"Germany":[12,4,-1,"Moderate and slowly falling: strong services but persistent male stoicism, plus eastern Germany's economic-grief legacy. Refugee youth are an emerging monitored group.","Keep the crisis-line network funded, integrate refugee mental health, and normalize therapy for young men — the cultural frontier.","TelefonSeelsorge 0800 111 0 111 / 0800 111 0 222"],
+"France":[13,5,-1,"Europe's persistent high-exception — rates fell after the 3114 national line launched in 2020, evidence that infrastructure works. Remaining drivers: rural isolation, alcohol, and male help-seeking resistance.","Keep expanding 3114 capacity, venue means-restriction (metro barriers), and raise school psychologist ratios — still below the EU average.","3114 (national suicide prevention, 24/7)"],
+"United Kingdom":[11,5,1,"Rising among the young: social media, exam and cost-of-living stress, and children's mental-health (CAMHS) waiting lists measured in months. Male rates ~2× female; university students are a monitored high-risk group.","CAMHS waitlist reform, enforce the new online-safety age rules, and continue means-restriction — the paracetamol pack-size law cut deaths historically.","Samaritans 116 123 (free, 24/7)"],
+"Ireland":[13,5,0,"Male youth rates remain high in a country that talks about mental health more openly than most: rural isolation, alcohol culture, and the long legacy of institutional trauma.","Rural outreach through community events (Darkness Into Light's model), sustain minimum alcohol pricing (enacted), and expand HSE counselling access.","Pieta House 1800 247 247 · Samaritans 116 123"],
+"Italy":[7,2.5,-1,"Among Europe's lowest: family cohesion is a genuine protective factor (a documented finding, not a stereotype). Burden concentrates in the north, among men, and in post-2008 economic-scar cohorts.","Protect family-network strength through youth employment policy, expand Telefono Amico's volunteer capacity, and monitor the south's service gaps.","Telefono Amico 02 2327 2327 (24/7)"],
+"Spain":[8,3,-1,"Fell after the 024 line launched in 2021. Regional variation is stark — Catalonia and Galicia run higher; dense family networks protect. Youth distress is increasingly voiced through social movements.","Keep 024 funded, continue post-pandemic school well-being programs, and watch the social-media-heavy cohorts.","024 (national line, 24/7, free)"],
+"Portugal":[9,3.5,-1,"Moderate, historically underreported: economic stagnation and emigration pressure, elderly isolation, and alcohol. Youth emigration separates the support networks that protect.","Expand SOS Voz Amiga's volunteer lines nationally, youth-employment programs to ease emigration pressure, and primary-care screening.","SOS Voz Amiga 213 544 545"],
+"Netherlands":[11,5,0,"The world's happiest teens — yet male rates persist. Openness is high and services strong; the frontier is performance pressure in a high-agency culture and online harms.","Continue 113's expansion, push EU social-media design regulation (the Dutch voice is loud there), and monitor student populations.","113 Zelfmoordpreventie — call 113 or 0800-0113"],
+"Belgium":[13,5.5,-1,"One of Western Europe's higher rates — an openness paradox: talking about mental health hasn't translated into faster help-seeking. Male rates ~2.4× female; Flanders exceeds Wallonia.","Grow the 1813 line's capacity, tighten firearm licensing (means-restriction), and roll out school gatekeeper training.","Zelfmoordlijn 1813 (24/7)"],
+"Sweden":[12,6,0,"Northern darkness, isolation and male stoicism keep rates above their Nordic neighbors despite excellent services. Youth rates are flat — the services exist; the ask is harder.","Male-targeted outreach through sports clubs, continued light-therapy infrastructure, and digital youth counseling expansion.","Självmordslinjen 90101 (Mind, 24/7)"],
+"Norway":[11,5,-1,"Slowly falling: oil-funded services are excellent; the remaining burden is northern isolation, Sámi youth equity, and male rates ~2× female.","Keep outdoor youth programs (friluftsliv is genuinely evidence-aligned prevention), northern telehealth, and Sámi-language services.","Mental Helse 116 123 (24/7)"],
+"Denmark":[11,5,-1,"Falling steadily: superb registry data means Denmark actually measures what works — systematic follow-up after attempts is the Danish specialty. Alcohol and male isolation remain.","Keep post-attempt follow-up programs, expand youth climate-anxiety support, and tighten alcohol policy.","Livslinien 70 201 201 (24/7)"],
+"Finland":[15,6,-1,"The famous turnaround: from 1990s crisis levels, rates fell by half or more via school health services, means control and therapy access — a global case study. Male rates remain stubbornly ~2.5× female.","Preserve the therapy-guarantee model, male-targeted outreach (the men's-sheds model), and watch young-adult alcohol links.","MIELI Crisis Helpline 09 2525 0111 · emergency 112"],
+"Iceland":[12,5,0,"Moderate European rates with a famous prevention story: after a 1990s teen substance-use crisis, Iceland's 'Youth in Iceland' model — curfews, sports-card funding, parental cooperation — cut teen drinking and smoking dramatically and became a global blueprint.","Protect the Youth-in-Iceland model (it's studied worldwide), maintain means-restriction via firearm licensing, and watch isolated fishing communities.","Red Cross Helpline 1717 (24/7)"],
+"Switzerland":[14,5,-1,"Among Western Europe's higher rates — an alpine paradox of wealth: firearm access (militia tradition), rural isolation in mountain valleys, and high male rates. Rates have fallen slowly as means-restriction spread.","Continue firearm-storage reform (the evidence-backed lever), valley-level outreach in remote cantons, and expand the 143 network's youth services.","Die Dargebotene Hand 143 (24/7)"],
+"USA":[18,8,1,"Youth rates up ~60% since 2007. Firearms are involved in roughly HALF of youth deaths — the single biggest lever. Compounding: social media, isolation, college costs and provider shortages with months-long waitlists.","Means-restriction (safe-storage and red-flag laws), real capacity behind 988, and universal school-based screening — the evidence stack is clear; politics is the barrier.","988 Suicide & Crisis Lifeline (call/text, 24/7)"],
+"Canada":[14,6,1,"Rising among teens; Indigenous youth (First Nations, Inuit, Métis) face rates several times the national average, tied to colonial trauma, residential-school legacy and remote service deserts.","Indigenous-led wellness programs (culturally grounded services outperform), 988 rollout quality, and telehealth for the North.","988 (call/text) · Kids Help Phone 1-800-668-6868"],
+"Brazil":[11,5,1,"Rising among teens: urban-violence exposure, inequality, machismo punishing male vulnerability, and documented Indigenous youth crises. CVV's 188 is world-class — awareness lags behind.","CVV capacity plus the school programs the 2021 law mandates, Indigenous-led mental health, and firearm means-restriction.","CVV 188 (24/7, free) · chat at cvv.org.br"],
+"Mexico":[11,5,1,"A decade of steady rises: cartel-violence exposure, machismo, children orphaned by violence, and thin services outside cities. Young males carry the highest risk; border states show documented peaks.","Línea de la Vida capacity, post-pandemic school screening, and violence prevention as upstream mental-health policy.","Línea de la Vida 800 911 2000 · emergency 911"],
+"Colombia":[14,7,1,"Decades of armed conflict, inequality and normalized violence; Indigenous and rural (campesino) youth carry disproportionate risk. Post-peace services exist on paper — deployment is uneven.","Expand Línea 106 beyond Bogotá, partner with Indigenous authorities on youth programs, and build post-conflict trauma services.","Línea 106 (Bogotá) · 192 opción 4 · emergency 123"],
+"Chile":[17,5,1,"The region's highest male youth rates despite strong institutions: academic pressure, isolation, unequal care access, and Mapuche youth distress. The 2019-uprising generation carries grievances.","Post-2019 school mental-health expansion, Indigenous-youth programs, and male-targeted outreach.","Salud Responde *4141 · emergency 131"],
+"Argentina":[15,5,0,"Economic-crisis despair in cycles — inflation erodes imagined futures; male rates ~3× female; strong community ties protect. Crisis-recovery correlation is documented.","Fund CAS 135 through economic cycles, implement the 2022 school mental-health law, and bridge youth employment.","CAS 135 (CABA) · 0800 345 1435 · emergency 911"],
+"Uruguay":[24,7,0,"Among the world's highest rates outside conflict zones: small population, rural isolation, alcohol culture and an aging society. Prevention programs arrived late but are building.","Scale Línea de Vida, rural telehealth, and alcohol policy — Uruguay's data systems are excellent; act on them.","Línea de Vida 0800 0767 · *0767 · emergency 911"],
+"Ecuador":[11,5.5,1,"Rising: cartel-violence spillover (the Guayaquil crisis), migration-family separation, and thin services. Youth are caught between violence and emigration dreams.","Emergency mental-health response in violence zones, school screening, and family-reunification support for migrant households.","Emergency 911 · findahelpline.com (limited)"],
+"Peru":[8,4,0,"Underreported: Andean and Amazon isolation, mining-region distress, and machismo. Lima's services don't reach the sierra; traditional communities hold protective strength.","Expand Línea 113 into rural regions, train community health technicians in mental health, and build Quechua-language services.","Línea 113 opción 5 · emergency 106"],
+"Bolivia":[14,6,0,"Underreported: altiplano isolation, regional economic stress and machismo. Youth emigration to Argentina and Chile separates families. Services are La Paz-centric.","Primary-care integration, school screening in El Alto, and telehealth for the altiplano's dispersed communities.","Emergency 110 · findahelpline.com (limited)"],
+"Venezuela":[9,4.5,0,"Collapse-era despair, mass migration separating millions of families, and data opacity. Those who left send remittances; those who stayed carry the weight.","Diaspora telehealth networks (Venezuelan psychologists abroad serving home), humanitarian MHPSS, and family-reunification support.","Emergency 911 · findahelpline.com (diaspora services)"],
+"Cuba":[6,3,-1,"Low and falling — universal health access and dense community networks protect. The 2022–24 emigration wave separated families; data transparency is debated.","Maintain community networks through the economic crisis, telehealth with the diaspora, and honest measurement — protection erodes silently if uncounted.","Emergency 104 · findahelpline.com (limited)"],
+"Nigeria":[9,5,0,"Stigma and weak registration hide true scale. Drivers: unemployment despair (the 'japa' emigration wave), conflict trauma in the northeast, and roughly one mental-health worker per 200,000+ people. Youth resilience is real — so is the strain.","Fund SURPIN beyond Lagos, integrate mental health into primary care (mhGAP), and train pastors and imams as gatekeepers — they are the de facto counselors.","SURPIN +234 806 210 6493 · emergency 112"],
+"Ethiopia":[11,6.5,0,"Conflict (Tigray and beyond), drought displacement and thin services. Community and faith structures protect; the health system carries war wounds. Data is thin — the need is not.","Post-conflict psychosocial programs, primary-care mental-health integration, and school re-opening as mental-health infrastructure.","Emergency 907/939 · findahelpline.com (limited)"],
+"Kenya":[13,7,0,"Rising visibility: exam pressure (KCSE), urban informal-settlement stress, and alcohol. Kenya's Befrienders model is respected — reach is the limit. University student distress is well documented.","Scale Befrienders beyond Nairobi, add school counselors per the curriculum reform, and enforce alcohol policy.","Befrienders Kenya +254 722 178 177"],
+"Ghana":[8,5,0,"Underreported: academic pressure, unemployment, and spiritual attribution of distress delaying treatment. Attempted suicide was a crime until recent reforms began moving.","Complete decriminalization in parliament, implement the mental-health levy, and partner traditional healers with referral training.","Emergency 112 · findahelpline.com (limited)"],
+"Uganda":[12,7,0,"Post-conflict northern trauma (the LRA legacy), one of the world's largest per-capita refugee burdens, and alcohol. Youth unemployment compounds; stigma keeps treatment minimal.","Refugee-camp psychosocial programs, school screening pilots, and Butabika hospital's outreach expansion to regions.","Emergency 999 · findahelpline.com (limited)"],
+"Tanzania":[9,5,0,"Underreported and understudied: rural poverty, adolescent pregnancy distress, and alcohol. Zanzibar's rates exceed the mainland. Services are Dar es Salaam-centric.","Rural primary-care integration, school counselors, and the first serious national data effort — you can't prevent what's never counted.","Emergency 112 · findahelpline.com (limited)"],
+"DR Congo":[13,7,0,"Eastern conflict trauma at industrial scale, mass displacement, and near-zero services. A generation in North Kivu knows only war. Data barely exists; suffering does.","Humanitarian MHPSS at scale, community-worker models built on village networks, and peace as the upstream intervention.","No national line · findahelpline.com (humanitarian)"],
+"Zimbabwe":[14,8,0,"Collapse-era despair: hyperinflation destroyed livelihoods and prospects; youth emigration is both symptom and pressure valve. Alcohol and pesticide access compound the risk.","Scale the famous Friendship Bench (grandmother-peer counseling — Zimbabwe's gift to world mental health), economic stabilization, and diaspora telehealth.","Emergency 999/112 · Friendship Bench (community) · findahelpline.com"],
+"South Africa":[20,9,1,"High and rising: inequality, a cohort raised amid violence, HIV-era orphaning, and township service deserts. Male rates ~2× female; young men carry the steepest risk.","Scale SADAG's model (it works), township school programs, firearms enforcement — and treat violence prevention as mental-health policy.","SADAG 0800 567 567 · Suicide Crisis 0800 12 13 14"]
+};
+
+/* ============================================================
+   2b. GENDER LENSES — per-country male & female-specific reasons
+   ============================================================ */
+const DEFAULT_M = ["Unemployment & 'provider' shame","Alcohol & substance use","Isolation — fewer close friendships","'Boys don't ask for help' norms","Access to lethal means"];
+const DEFAULT_F = ["Females attempt more (≈1.5–2×) even where male deaths dominate","Early marriage & domestic violence","Restricted autonomy in some regions","Academic & family pressure","In South Asia, young female rates rival male — unlike the West"];
+
+const GENDER_WHY = {
+"India":["Exam-failure shame after board and coaching results | Unemployment clashing with provider expectations by the mid-20s | Pesticide access in rural households","Dowry disputes and arranged-marriage pressure | Domestic violence behind closed doors | A global rarity: young female rates rival male rates"],
+"Pakistan":["Unemployment vs the 'provider' role | Conflict exposure in Balochistan & KP | Help-seeking blocked by masculinity norms","Early marriage and honor-culture constraints | Domestic violence rarely registered | Attempts happen at home and vanish from the statistics"],
+"Bangladesh":["Job scarcity and dowry-related financial shame for men | Rural pesticide access | Stoicism norms","Dowry abuse and child marriage push female rates to male levels | Domestic violence | One of the world's smallest gender gaps"],
+"Nepal":["Remittance pressure on men who can't migrate | Alcohol culture | Pesticide access in farming households","Running households alone while husbands work abroad | Early marriage | Domestic violence underreported"],
+"Sri Lanka":["Alcohol misuse is the leading male risk factor | Post-2022 crisis job loss | Historical pesticide access","Rates unusually close to male for the region | Family conflict is the top documented trigger | Isolation in plantation districts"],
+"Afghanistan":["Four decades of war trauma | Total unemployment collapse | Loss of role and purpose after 2021","Barred from secondary school since 2021 | Confined home — friendships and autonomy stripped | Attempts almost never reported"],
+"Kazakhstan":["The post-Soviet pattern: alcohol and collapsed male roles | Rural-urban divide | Hierarchy hides distress","Domestic violence documented at elevated rates | Rural isolation | Reporting thin outside cities"],
+"Uzbekistan":["Role strain when labor migration upends households | Alcohol | Distress framed as weakness","Husbands migrating leaves women heading households alone | Early marriage in regions | Mahalla-level concealment"],
+"China":["Urban work pressure and isolation | Rural men retain pesticide access | 'Left-behind' sons carry silent strain","Historic inversion: 1990s rural young women had the world's highest rates | Now low and near-equal — urbanization + pesticide control worked | Gaokao and family expectation remain"],
+"Japan":["Salaryman burnout and identity-through-work | Men rarely seek help | Isolation (hikikomori skews male)","Distress hides inside perfectionism | Teen attempts spike on school-return dates (Sept 1) | Single-mother poverty documented"],
+"South Korea":["Suneung failure framed as family shame | Military service and 'specs' competition | OECD-lowest help-seeking","One of the OECD's smallest gender gaps | Appearance-based harassment and online misogyny | Gig-economy anxiety hits young women hard"],
+"Mongolia":["Herder isolation and alcohol availability | Post-1990 collapse of the breadwinner role | Among the world's highest male rates","Domestic violence | Rural isolation | Reporting thin outside Ulaanbaatar"],
+"Vietnam":["Rural pesticide access | Unemployment pressure | Stoicism norms","Early marriage in highland regions | Domestic violence | Family-shame stigma suppresses reporting"],
+"Thailand":["Farmer debt and alcohol — male rates near double female | Rural isolation | Means access","Parents migrating for city work separates teens from anchors | Teenage-mother stigma | Household violence underreported"],
+"Malaysia":["Exam-streaming pressure (SPM culture) | Youth unemployment | 'Malu' shame blocks help-seeking","Social-media appearance pressure | Family honor expectations | Domestic distress underreported"],
+"Singapore":["National Service transitions and career pressure | High-functioning distress goes unnoticed | Shame culture","Perfectionism and appearance comparison | Privacy-driven isolation | Help delayed until crisis"],
+"Indonesia":["Youth unemployment at scale | Stoicism norms | Services concentrated in Java","Early marriage in some regions | Domestic violence | The world's heaviest social media use amplifies comparison"],
+"Philippines":["OFW fathers' absence | Unemployment | Machismo blocks help-seeking","One of the world's fastest-rising female rates | Online harassment and family separation | Typhoon trauma compounding"],
+"Turkey":["2023 earthquake trauma | Youth unemployment above 20% | Stoicism norms","Early marriage in the southeast | Domestic violence | Honor constraints silence reporting"],
+"Iran":["Sanctions-economy unemployment | Substance use | Male stoicism","Uniquely elevated female rates: restricted autonomy | Mandatory codes on dress and behavior | Documented cases drew global attention to women's despair"],
+"Iraq":["Post-conflict trauma at scale | Militia-violence exposure | Unemployment","Gender-based violence | Early marriage | Near-total service gaps"],
+"Syria":["War trauma and forced-conscription fear | Unemployment | Displacement","Displacement and lost schooling | Early marriage framed as 'protection' | Services barely function"],
+"Lebanon":["Economic collapse destroying provider roles | Emigration pressure | Blast trauma","Caretaking burdens in crisis | Rising female rates documented by NGOs | Emigration splits support networks"],
+"Israel":["Combat and reservist exposure | October-7 mass trauma | High means access","Elevated anxiety since the war began | Mass-trauma exposure | Dense services blunt but don't erase risk"],
+"Egypt":["Graduate unemployment — the 'waithood' decade | Stigma | Underregistration","FGM legacy | Early marriage in rural areas | Harassment-related distress underreported"],
+"Yemen":["War trauma and famine stress | Child-soldiering legacy | Collapsed services","Child marriage rising sharply with poverty | Maternal despair invisible to any system | Humanitarian access limited"],
+"Sudan":["War trauma and mass displacement | Famine stress | System collapse","Conflict-era sexual violence documented at scale | Child marriage accelerating | Measurement itself has stopped"],
+"Morocco":["Rural unemployment in the Rif and interior | Poverty | Services concentrated in Rabat-Casablanca","Early marriage | Restricted mobility | Domestic violence underreported"],
+"Australia":["Rates ~2.5× female: rural isolation, mining-camp culture, stoicism | Firearms access | Service waitlists","Attempts outnumber male attempts | Body-image and social-media pressure documented | Indigenous women face compounded risk"],
+"New Zealand":["Māori and Pasifika young men carry the steepest rates | Rural isolation | Means access","Māori and Pasifika young women face multiples of the average | Bullying and body-image pressure | Youth workforce shortage delays care"],
+"Fiji":["Pesticide and pharmaceutical access | Unemployment | Cyclone displacement","Domestic violence among the world's highest measured | Family shame silences help-seeking | Youth out-migration drains role models"],
+"Russia":["~4× female: alcohol is the engine | 'Boys don't talk' norms | Regional job collapse","Elevated vs Western Europe | Domestic violence decriminalized in 2017 removed a protection layer | Reporting varies by region"],
+"Ukraine":["Frontline trauma and conscription | Displacement | Alcohol","Displacement and loss of partners | Wartime caregiving burden | Rates rising from a lower base"],
+"Poland":["Among the EU's highest male youth rates | Masculinity norms and alcohol | Thin youth services","Among the EU's lowest female rates — the gap itself shows how masculinity shapes this crisis | Church framing slows open discussion"],
+"Germany":["Eastern economic-grief legacy | Male stoicism | Means access","Low overall rates | Refugee and migrant women's compounded risk | Strong services reach most"],
+"France":["Rural isolation and alcohol | Firearms in hunting households | Male help-seeking resistance","Historically elevated female rates vs neighbors | Paris-region pressure vs rural isolation both documented | The 3114 line reaches women better"],
+"United Kingdom":["~2× female: the loneliness epidemic, 'lad culture', debt | Means access | CAMHS fails boys quietly","Self-harm rates among Europe's highest recorded | CAMHS waiting lists fall hardest on teen girls | Social-media harm documented by regulators"],
+"Ireland":["Rural isolation | Alcohol culture | Institutional-trauma legacy","Rates lower than male but rising | Body-image pressure documented | Openness improving conversion to care"],
+"Italy":["Northern economic-scar cohorts (post-2008) | Unemployment | Male stoicism","Among Europe's lowest: family cohesion documented as protective | Southern service gaps matter less within strong networks | Monitoring aging-out cohorts"],
+"Spain":["Catalonia and Galicia concentration | Alcohol | Stoicism","Post-pandemic teen-girl distress spike documented | Family networks protective | The 024 line improving access"],
+"Portugal":["Emigration pressure and unemployment | Alcohol | Underreporting legacy","Historically underreported | Domestic-violence services now among Europe's most developed | Youth emigration splits networks"],
+"Netherlands":["Performance pressure in a high-agency culture | Means access | Monitored student populations","The world's happiest teens — yet online harms documented among girls | Strong services | Openness high"],
+"Belgium":["Firearm access in Flanders | Male stoicism | One of Western Europe's higher rates","Attempts more frequent than males | Talking hasn't converted to faster help-seeking | Flanders exceeds Wallonia"],
+"Sweden":["Darkness and isolation | Stoicism keeps male rates above Nordic peers | Alcohol","Excellent services blunt female risk | Flat rates suggest the frontier is cultural, not clinical | Digital counseling expanding"],
+"Norway":["Northern isolation | Sámi male youth distress | ~2× female","Low rates overall | Equity gaps monitored | friluftsliv culture protective"],
+"Denmark":["Alcohol and isolation | Registry data shows risk peaks after relationship breakdown | Means access","Superb post-attempt follow-up keeps female rates low | Registry data means women's risk is actually measured | Declining"],
+"Finland":["~2.5× female — the frontier of the famous turnaround | Historical hunting-culture firearm access | Isolation and stoicism","School health services protect | Rates fell dramatically since the 1990s | The therapy guarantee reaches girls early"],
+"Iceland":["Means access via licensing | Small-community shame | Monitored fishing communities","The Youth-in-Iceland model's biggest wins include girls' substance-use collapse | Rates low and measured | Youth clubs as infrastructure"],
+"Switzerland":["Militia firearm tradition — uniquely high male means access in Western Europe | Alpine valley isolation | Slow decline as means-restriction spreads","Perfectionism and valley isolation | Underdiscussed | Strong services"],
+"USA":["Firearms involved in the majority of male youth deaths | Rural and suburban isolation | Provider-culture shame","Attempts more frequent than males | CDC-documented social-media-linked despair drives girls' ER visits | Compounded risk for LGBTQ+ youth"],
+"Canada":["Firearms access | Indigenous male youth rates multiples of average | Northern isolation","Indigenous women face compounded colonial-trauma risk | Northern service deserts | Rising teen-girl rates"],
+"Brazil":["Urban-violence exposure | Machismo punishing vulnerability | Firearm access","Rising female rates | Black and Indigenous young women face compounded inequality | A gender-violence epidemic backdrop"],
+"Mexico":["Cartel-violence exposure | Machismo | Border-state peaks documented","Orphaning by violence | Disappearance of family members | Rising teen-girl rates documented"],
+"Colombia":["Conflict legacy and urban violence | Machismo | Alcohol","Conflict-era sexual violence | Indigenous community strain | Rising rates despite the peace dividend"],
+"Chile":["The region's highest male youth rates | Academic pressure and isolation | Unequal care access","The 2019-uprising generation's grievances | Mapuche women's compounded distress | Rising overall"],
+"Argentina":["Economic-crisis despair hitting provider identity | ~3× female | Alcohol","Strong community ties protective | Domestic-violence services expanding | Crisis-cycle correlation documented"],
+"Uruguay":["Rural isolation and alcohol | Firearm access | Aging prevention infrastructure","Elevated for the region | Small-country loneliness documented | Programs arrived late"],
+"Ecuador":["Cartel-violence spillover in Guayaquil | Unemployment | Machismo","Migration-family separation | Gender violence in crisis zones | Rising rates"],
+"Peru":["Andean and Amazon isolation | Mining-region distress | Machismo","Underreported domestic violence | Quechua protective networks strained by migration | Services Lima-centric"],
+"Bolivia":["Altiplano isolation | Alcohol | Economic stress","Early marriage | Underreported violence | El Alto urban strain"],
+"Venezuela":["Collapse-era unemployment | Machismo | Data opacity","Migration separated millions of families | Young women heading remittance-dependent households | Services degraded"],
+"Cuba":["Low rates: community networks and universal care protect | Emigration wave strains | Debated transparency","Emigration separating families | Care burden shifting to women | Data transparency debated"],
+"Nigeria":["Unemployment despair — the 'japa' emigration wave | Conflict trauma in the northeast | ~1 mental-health worker per 200,000+ people","Early marriage | Domestic violence | Boko Haram's gendered trauma"],
+"Ethiopia":["Conflict trauma (Tigray and beyond) | Drought-driven livelihood collapse | Means access","Conflict-era sexual violence documented at scale | Early marriage rising with poverty | Faith structures protective but stretched"],
+"Kenya":["KCSE exam pressure | Urban informal-settlement stress | Alcohol","Teenage pregnancy driving school expulsion | Gender-violence distress | Rising visibility"],
+"Ghana":["Unemployment | Spiritual attribution delaying treatment | Underreporting","Attempts frequent | Distress framed as spiritual, delaying care | Decriminalization reform in progress"],
+"Uganda":["LRA-conflict legacy | Alcohol | Unemployment compounding","One of the world's largest refugee burdens falls on women and girls | Early marriage common | Stigma minimalizes treatment"],
+"Tanzania":["Rural poverty | Alcohol | Dar-centric services","Adolescent pregnancy distress and school expulsion | Zanzibar rates exceed the mainland | A first serious data effort is needed"],
+"DR Congo":["Militia trauma at industrial scale | Mining-camp economies | Near-zero services","Conflict-era sexual violence at industrial scale | A generation of displaced girls | Peace is the upstream intervention"],
+"Zimbabwe":["Hyperinflation destroying provider roles | Emigration pressure | Pesticide access","The Friendship Bench reaches grandmothers — and increasingly granddaughters | Domestic violence common | Economic despair is gendered"],
+"South Africa":["~2× female: township violence exposure, HIV-era orphaning, firearms | Male stoicism","A documented gender-based-violence epidemic | Young women's rates rising | SADAG's services reaching girls"]
+};
+
+/* ============================================================
+   3. SETUP — "global" passed through as text (v6 bugfix retained)
+   ============================================================ */
+const select = document.getElementById("countrySelect");
+let barChart=null, lineChart=null, hapChart=null, fcChart=null, crisisChart=null, currentIdx=null;
+
+Chart.defaults.color="#9db8ab";
+Chart.defaults.borderColor="rgba(52,211,153,0.08)";
+Chart.defaults.font.family="'Outfit',sans-serif";
+
+const option=document.createElement("option");
+option.value="global"; option.textContent="🌍 Global Average";
+select.appendChild(option);
+COUNTRIES.map((c,i)=>({i,name:c.name})).sort((a,b)=>a.name.localeCompare(b.name))
+  .forEach(({i,name})=>{ const o=document.createElement("option"); o.value=i; o.textContent=`${COUNTRIES[i].flag} ${name}`; select.appendChild(o); });
+select.value=COUNTRIES.findIndex(c=>c.name==="India");
+select.addEventListener("change",()=>updateDashboard(select.value==="global"?"global":parseInt(select.value)));
+
+/* ============================================================
+   4. HELPERS
+   ============================================================ */
+const fmt=n=>Number.isInteger(n)?n.toString():n.toFixed(1);
+const byName=n=>COUNTRIES.findIndex(c=>c.name===n);
+
+function animateValue(el,end,suffix,decimals=-1,duration=800){
+  const start=parseFloat(el.textContent)||0, t0=performance.now();
+  function frame(now){
+    const p=Math.min((now-t0)/duration,1), e=1-Math.pow(1-p,3), v=start+(end-start)*e;
+    el.textContent=decimals>=0?v.toFixed(decimals):fmt(v)+suffix;
+    if(p<1)requestAnimationFrame(frame);
+  } requestAnimationFrame(frame);
+}
+function deltaVerdict(v,g,k,isG){
+  if(isG)return{text:"Global baseline",cls:"neutral"};
+  const m=INDICATORS[k], d=v-g, isGood=m.lowerIsBetter?d<0:d>0;
+  return{text:`${d>0?"+":""}${fmt(d)} vs global avg`,cls:d===0?"neutral":(isGood?"good":"bad")};
+}
+function genTrend(c){
+  return YEARS.map(y=>{const t=Math.pow((y-2000)/22,0.9);
+    return Math.round((c.s2000+(c.current.stunting-c.s2000)*t)*10)/10;});
+}
+function linreg(xs,ys){
+  const n=xs.length,sx=xs.reduce((a,b)=>a+b,0),sy=ys.reduce((a,b)=>a+b,0);
+  const sxy=xs.reduce((a,x,i)=>a+x*ys[i],0),sxx=xs.reduce((a,x)=>a+x*x,0);
+  const m=(n*sxy-sx*sy)/(n*sxx-sx*sx); return {m,b:(sy-m*sx)/n};
+}
+function project2030(c){
+  const ys=genTrend(c), {m,b}=linreg(YEARS,ys);
+  return Math.max(0, Math.round((m*2030+b)*10)/10);
+}
+function genInsight(c){
+  const g=c.s2000-c.current.stunting; let s;
+  if(g>=12)s=`${c.flag} <strong>${c.name}</strong> cut stunting from <strong>${c.s2000}% to ${c.current.stunting}%</strong> since 2000 — one of the world's strongest turnarounds.`;
+  else if(g>=6)s=`${c.flag} <strong>${c.name}</strong> reduced stunting from <strong>${c.s2000}% to ${c.current.stunting}%</strong> since 2000 — steady national progress.`;
+  else if(g>=0)s=`${c.flag} <strong>${c.name}</strong>'s stunting barely moved since 2000 (<strong>${c.s2000}% → ${c.current.stunting}%</strong>) — progress has stalled.`;
+  else s=`${c.flag} <strong>${c.name}</strong>'s child stunting has <strong>worsened</strong> since 2000 (<strong>${c.s2000}% → ${c.current.stunting}%</strong>) — a warning sign.`;
+  if(c.current.oos>=25)s+=` With <strong>${c.current.oos}% out of school</strong>, education is the emergency.`;
+  else if(c.current.dtp3<75)s+=` Immunization at <strong>${c.current.dtp3}%</strong> leaves many unprotected.`;
+  else if(c.current.u5mr>=80)s+=` Under-5 mortality of <strong>${c.current.u5mr}/1,000</strong> is among the world's highest.`;
+  else if(c.current.dtp3>=97)s+=` Near-universal immunization (${c.current.dtp3}%) is a quiet superpower.`;
+  return s;
+}
+const GLOBAL_INSIGHT="🌍 Globally, stunting fell from <strong>33% to 22%</strong> since 2000 — real progress, but <strong>148 million children</strong> still can't grow to their full potential.";
+
+function genWhy(c){
+  let base=c.r.startsWith("*")?c.r.slice(1):REASONS[c.r]; let extra="";
+  if(c.current.oos>=20)extra=` With <strong>${c.current.oos}% of children out of school</strong>, daily survival crowds out teenage dreams.`;
+  else if(c.current.u5mr>=80)extra=` Under-5 mortality of <strong>${c.current.u5mr}/1,000</strong> means many teens grew up losing siblings to preventable causes.`;
+  else if(c.current.stunting>=40)extra=` With <strong>${c.current.stunting}% stunting</strong>, malnutrition shapes bodies and futures before adulthood begins.`;
+  else if(c.current.dtp3<=75)extra=` Only <strong>${c.current.dtp3}% immunization coverage</strong> keeps communities one outbreak from crisis.`;
+  return base+extra;
+}
+function hapRank(h){let r=1;COUNTRIES.forEach(c=>{if(c.h>h)r++;});return r;}
+function hapEmoji(h){return h>=7?"😄":h>=6?"🙂":h>=5?"😐":h>=4?"🙁":"😞";}
+
+/* ============================================================
+   5. k-NN TWINS
+   ============================================================ */
+function minmax(vals){const mn=Math.min(...vals),mx=Math.max(...vals);return v=>(v-mn)/(mx-mn||1);}
+const norm={
+  st:minmax(COUNTRIES.map(c=>c.current.stunting)), oos:minmax(COUNTRIES.map(c=>c.current.oos)),
+  dtp:minmax(COUNTRIES.map(c=>c.current.dtp3)), u5:minmax(COUNTRIES.map(c=>c.current.u5mr)),
+  hap:minmax(COUNTRIES.map(c=>c.h))
+};
+const FEAT=c=>[norm.st(c.current.stunting),norm.oos(c.current.oos),norm.dtp(c.current.dtp3),norm.u5(c.current.u5mr),norm.hap(c.h)];
+function findTwins(idx){
+  const a=FEAT(COUNTRIES[idx]);
+  return COUNTRIES.map((c,i)=>({i,d:Math.hypot(...FEAT(c).map((v,k)=>v-a[k]))}))
+    .filter(o=>o.i!==idx).sort((x,y)=>x.d-y.d).slice(0,5);
+}
+function renderTwins(idx){
+  document.getElementById("twinList").innerHTML=findTwins(idx).map(t=>{
+    const c=COUNTRIES[t.i];
+    return `<div class="twin-chip" onclick="jumpTo(${t.i})">${c.flag} ${c.name}<small>${Math.round((1-t.d/2.24)*100)}% match</small></div>`;
+  }).join("");
+}
+function jumpTo(i){select.value=i;updateDashboard(i);window.scrollTo({top:0,behavior:"smooth"});}
+
+/* ============================================================
+   6. RANKING TABLE
+   ============================================================ */
+let sortKey="u5mr", sortDir=1, searchQ="";
+function renderTable(){
+  let rows=COUNTRIES.map(c=>({...c.current,gain:c.s2000-c.current.stunting,h:c.h,name:c.name,flag:c.flag}))
+    .filter(r=>r.name.toLowerCase().includes(searchQ));
+  rows.sort((a,b)=>{
+    if(sortKey==="name")return a.name.localeCompare(b.name)*sortDir;
+    return (a[sortKey]-b[sortKey])*sortDir;
+  });
+  document.getElementById("rankCount").textContent=`${rows.length} countries · click any row`;
+  document.getElementById("rankBody").innerHTML=rows.map(r=>{
+    const i=byName(r.name), mine=(i===currentIdx);
+    return `<tr class="rowlink ${mine?'mine':''}" onclick="jumpTo(${i})">
+      <td>${r.flag} ${r.name}</td><td>${fmt(r.stunting)}</td><td>${fmt(r.oos)}</td>
+      <td>${fmt(r.dtp3)}</td><td>${fmt(r.u5mr)}</td><td>${fmt(r.h)}</td><td>${fmt(Math.round(r.gain*10)/10)}</td></tr>`;
+  }).join("");
+}
+document.querySelectorAll("#rankTable th").forEach(th=>{
+  th.addEventListener("click",()=>{
+    const k=th.dataset.k;
+    if(sortKey===k)sortDir*=-1;
+    else {sortKey=k; sortDir=(k==="name"||k==="dtp3"||k==="gain"||k==="h")?1:-1;}
+    renderTable();
+  });
+});
+document.getElementById("rankSearch").addEventListener("input",e=>{searchQ=e.target.value.toLowerCase();renderTable();});
+
+/* ============================================================
+   7. CRISIS MODULE — bespoke per-country rendering
+   ============================================================ */
+function renderLens(name,isG){
+  const mEl=document.getElementById("lensM"), fEl=document.getElementById("lensF");
+  const gw=GENDER_WHY[name];
+  if(isG||!gw){
+    document.getElementById("lensMTitle").textContent="👨 Why male rates dominate almost everywhere";
+    document.getElementById("lensFTitle").textContent="👩 The female pattern the averages hide";
+    mEl.innerHTML=DEFAULT_M.map(x=>`<li>${x}</li>`).join("");
+    fEl.innerHTML=DEFAULT_F.map(x=>`<li>${x}</li>`).join("");
+    return;
+  }
+  document.getElementById("lensMTitle").textContent=`👨 Why men in ${name} are dying more`;
+  document.getElementById("lensFTitle").textContent=`👩 The hidden female burden in ${name}`;
+  mEl.innerHTML=gw[0].split("|").map(x=>`<li>${x.trim()}</li>`).join("");
+  fEl.innerHTML=gw[1].split("|").map(x=>`<li>${x.trim()}</li>`).join("");
+}
+function toggleCrisis(){
+  const s=document.getElementById("crisis");
+  s.classList.toggle("open");
+  if(s.classList.contains("open")){
+    s.scrollIntoView({behavior:"smooth"});
+    if(currentIdx!==null)refreshCrisis(currentIdx);
+  }
+}
+function refreshCrisis(idx){
+  const isG=idx==="global";
+  const c=isG?{name:"Global Average",flag:"🌍"}:COUNTRIES[idx];
+  const d=SUICIDE[c.name];
+  document.getElementById("crisis-title").textContent=`${c.flag} ${c.name} — Suicide among ages 15–29`;
+  const whyEl=document.getElementById("crisisWhy");
+  const prevEl=document.getElementById("crisisPrevent");
+  const helpEl=document.getElementById("crisisHelp");
+
+  if(!d){
+    ["cv-m","cv-f","cv-t","cv-2030"].forEach(id=>document.getElementById(id).textContent="n/a");
+    ["cs-m","cs-f","cs-t","cs-2030"].forEach(id=>{const e=document.getElementById(id);e.className="card-sub neutral";e.textContent="global baseline";});
+    if(crisisChart){crisisChart.destroy();crisisChart=null;}
+    whyEl.innerHTML=`<b>The global picture:</b> ≈8 youth deaths per 100,000 (males ≈11, females ≈6). Suicide is the <b>3rd leading cause of death</b> among 15–29 year-olds worldwide (WHO). Select any country above for its specific breakdown.`;
+    prevEl.innerHTML=`<b>🛡️ What works worldwide:</b> means restriction (pesticides, firearms, bridges), school-based services and gatekeeper training, 24/7 crisis lines with real capacity, follow-up after attempts, decriminalization, and responsible media reporting. The SDG 3.4 target: cut suicide one-third by 2030.`;
+    helpEl.innerHTML=`🟢 <b>Help exists worldwide.</b><span class="big">findahelpline.com</span>Free, confidential helplines in 130+ countries · Local emergency numbers: 112 (EU/most), 911 (Americas), 999 (UK/commonwealth).`;
+    renderLens(c.name,true);
+    return;
+  }
+
+  const [m,f,trend,reason,prevent,helpline]=d;
+  const total=Math.round(((m+f)/2)*10)/10;
+  const p2030=trend===1?total*1.18:trend===-1?total*0.67:total*1.02;
+  const p2030r=Math.round(p2030*10)/10;
+
+  document.getElementById("cv-m").textContent=fmt(m);
+  document.getElementById("cv-f").textContent=fmt(f);
+  document.getElementById("cv-t").textContent="≈"+fmt(total);
+  document.getElementById("cv-2030").textContent="≈"+fmt(p2030r);
+  const trendTxt=trend===1?{t:"rising 📈",c:"bad"}:trend===-1?{t:"falling 📉",c:"good"}:{t:"flat →",c:"neutral"};
+  document.getElementById("cs-m").className="card-sub "+(m>11?"bad":"good");
+  document.getElementById("cs-m").textContent=(m/11).toFixed(1)+"× the global male rate";
+  document.getElementById("cs-f").className="card-sub "+(f>6?"bad":"good");
+  document.getElementById("cs-f").textContent=(f/6).toFixed(1)+"× the global female rate";
+  document.getElementById("cs-t").className="card-sub neutral";
+  document.getElementById("cs-t").textContent=`M:F ratio ${(m/f).toFixed(1)}:1`;
+  document.getElementById("cs-2030").className="card-sub "+trendTxt.c;
+  document.getElementById("cs-2030").textContent="trend: "+trendTxt.t+" · SDG 3.4 target = −33%";
+
+  if(crisisChart)crisisChart.destroy();
+  crisisChart=new Chart(document.getElementById("crisisChart"),{
+    type:"bar",
+    data:{labels:["👨 Males","👩 Females"],datasets:[
+      {label:`${c.flag} ${c.name}`,data:[m,f],backgroundColor:"rgba(52,211,153,0.85)",borderRadius:10},
+      {label:"🌍 Global youth avg",data:[11,6],backgroundColor:"rgba(148,163,184,0.5)",borderRadius:10}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:"bottom",labels:{usePointStyle:true}}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:"deaths per 100,000 youth"}}}}
+  });
+
+  whyEl.innerHTML=`<b>Why?</b> ${reason}`;
+  prevEl.innerHTML=`<b>🛡️ What would work here:</b> ${prevent}`;
+  helpEl.innerHTML=`🟢 <b>${c.name} — get help now.</b><span class="big">${helpline}</span>Helplines change — verify via <b>findahelpline.com</b>. If in immediate danger, contact local emergency services or go to the nearest ER. Talking about it is not weakness — it's the intervention.`;
+  renderLens(c.name,false);
+}
+
+/* ============================================================
+   8. SMART ACTION PLANS
+   ============================================================ */
+const PLANS={
+  u5mr:{icon:"💔",title:"Cut Child Deaths",bullets:["Skilled birth attendance for every delivery","ORS + zinc for childhood diarrhea","Insecticide-treated malaria nets","Emergency transport for newborns"],ev:"Global under-5 deaths halved (9.9M → 4.9M) since 2000 — mostly via these cheap, proven tools."},
+  oos:{icon:"📚",title:"Get Kids Into Class",bullets:["Remove school fees & hidden costs","School feeding programs (free meals = attendance)","Cash transfers conditional on girls' attendance","Build schools within walking distance"],ev:"Nepal & Ethiopia cut out-of-school rates sharply with fee removal + school meals."},
+  stunting:{icon:"🍎",title:"Cut Stunting",bullets:["Exclusive breastfeeding, first 6 months","Vitamin A & iron supplementation","Fortified staples + school meal programs","Clean water & sanitation (gut health = growth)"],ev:"Bangladesh cut stunting 26 points (50% → 24%) in 20 years using exactly these tools."},
+  dtp3:{icon:"💉",title:"Reach Every Child With Vaccines",bullets:["Door-to-door outreach campaigns","Reliable vaccine cold-chain investment","Community health workers in remote areas","Vaccination days at schools & markets"],ev:"Ethiopia pushed DTP3 to 73% via door-to-door outreach even across conflict zones."},
+  happy:{icon:"🧠",title:"Fix Youth Mental Health",bullets:["Free school counselors in every secondary school","Lower exam stakes — multiple pathways to success","Sports, arts & clubs funded for all teens","Youth job guarantees & paid internships"],ev:"Nordic countries pair low-stakes schooling with free counseling — and top every youth happiness table."}
+};
+function severityScores(c){
+  return{u5mr:(c.current.u5mr-GLOBAL.u5mr)/GLOBAL.u5mr, oos:(c.current.oos-GLOBAL.oos)/GLOBAL.oos,
+    stunting:(c.current.stunting-GLOBAL.stunting)/GLOBAL.stunting,
+    dtp3:(GLOBAL.dtp3-c.current.dtp3)/GLOBAL.dtp3, happy:(GLOBAL.h-c.h)/GLOBAL.h};
+}
+function buildPlan(c,isG){
+  document.getElementById("planCountry").textContent=`${c.flag} ${c.name}`;
+  const cards=[];
+  if(isG){cards.push(PLANS.u5mr,PLANS.oos,PLANS.stunting,PLANS.dtp3);}
+  else{
+    const sev=severityScores(c);
+    Object.keys(sev).filter(k=>sev[k]>0.05).sort((a,b)=>sev[b]-sev[a]).slice(0,3).forEach(k=>cards.push(PLANS[k]));
+    if(!cards.length)cards.push({icon:"🛡️",title:"Maintain & Watch",bullets:["All child indicators beat the global average — protect the funding","Watch for new gaps (mental health, inequality inside the country)","Keep data systems sharp: you can't fix what you don't measure"],ev:`${c.name}'s fundamentals are strong — the frontier is quality, not survival.`});
+    const good={u5mr:(GLOBAL.u5mr-c.current.u5mr)/GLOBAL.u5mr,oos:(GLOBAL.oos-c.current.oos)/GLOBAL.oos,
+      stunting:(GLOBAL.stunting-c.current.stunting)/GLOBAL.stunting,dtp3:(c.current.dtp3-GLOBAL.dtp3)/GLOBAL.dtp3,happy:(c.h-GLOBAL.h)/GLOBAL.h};
+    const bk=Object.keys(good).sort((a,b)=>good[b]-good[a])[0];
+    if(good[bk]>0.10){
+      const st={u5mr:`Under-5 mortality of ${c.current.u5mr}/1,000 beats the global average — newborn care works.`,
+        oos:`Only ${c.current.oos}% out of school — near-universal education.`,
+        stunting:`Stunting at ${c.current.stunting}% is far below global average — nutrition works.`,
+        dtp3:`DTP3 coverage of ${c.current.dtp3}% beats global average — keep the cold chain funded.`,
+        happy:`Youth happiness of ${c.h}/10 is well above global average — protect the social model.`};
+      cards.push({icon:"💪",title:"Keep Doing This",bullets:[st[bk],"Fund it like it's permanent — gains die when budgets do."],ev:"Sustainability beats intensity: programs that survive politics are the ones that work."});
+    }
+  }
+  document.getElementById("planGrid").innerHTML=cards.map((p,i)=>`
+    <div class="work-card" style="animation-delay:${i*0.08}s"><div class="card-icon">${p.icon}</div>
+    <h4>${p.title}</h4><ul>${p.bullets.map(b=>`<li>${b}</li>`).join("")}</ul>
+    <div class="work-ev"><b>Evidence:</b> ${p.ev}</div></div>`).join("");
+}
+
+/* ============================================================
+   9. STATIC CHARTS
+   ============================================================ */
+(function(){
+  const top=COUNTRIES.map(c=>({name:c.name,flag:c.flag,gain:c.s2000-c.current.stunting}))
+    .sort((a,b)=>b.gain-a.gain).slice(0,8).reverse();
+  new Chart(document.getElementById("rankChart"),{type:"bar",
+    data:{labels:top.map(t=>`${t.flag} ${t.name}`),
+      datasets:[{data:top.map(t=>Math.round(t.gain*10)/10),backgroundColor:"rgba(52,211,153,0.85)",hoverBackgroundColor:"#6ee7b7",borderRadius:8}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,title:{display:true,text:"percentage points"}}}}});
+})();
+const scatterChart=new Chart(document.getElementById("scatterChart"),{type:"scatter",
+  data:{datasets:[
+    {label:"All countries",data:COUNTRIES.map(c=>({x:c.current.dtp3,y:c.current.u5mr})),backgroundColor:"rgba(148,163,184,0.45)",pointRadius:3},
+    {label:"Selected",data:[],backgroundColor:"#34d399",pointRadius:9,pointHoverRadius:11}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{usePointStyle:true}}},
+    scales:{x:{title:{display:true,text:"DTP3 vaccine coverage %"},min:50,max:100},
+      y:{title:{display:true,text:"Under-5 mortality per 1,000"},beginAtZero:true}}}});
+
+/* ============================================================
+   10. SIMULATOR
+   ============================================================ */
+const simStunt=document.getElementById("sim-stunt"),simVax=document.getElementById("sim-vax");
+[simStunt,simVax].forEach(el=>el.addEventListener("input",updateSim));
+function updateSim(){
+  document.getElementById("lbl-stunt").textContent=simStunt.value;
+  document.getElementById("lbl-vax").textContent=simVax.value;
+  if(currentIdx===null||currentIdx==="global"){
+    document.getElementById("sim-headline").innerHTML="Select a country above";
+    document.getElementById("sim-detail").textContent="Then move the sliders to project the impact.";return;
+  }
+  const c=COUNTRIES[currentIdx];
+  const f=(1-0.10*(simVax.value/10))*(1-0.15*(simStunt.value/10));
+  const nu=Math.round(c.current.u5mr*f*10)/10, pc=Math.round((1-f)*100);
+  document.getElementById("sim-headline").innerHTML=`U5MR: ${c.current.u5mr} → <span>${nu}</span> per 1,000`;
+  document.getElementById("sim-detail").textContent=`If ${c.name} cut stunting by ${simStunt.value} pp and raised immunization by ${simVax.value} pp → ≈ ${pc}% fewer child deaths.`;
+}
+
+/* ============================================================
+   11. MAIN UPDATE
+   ============================================================ */
+function updateDashboard(idx){
+  currentIdx=idx;
+  const isG=idx==="global";
+  const c=isG?{name:"Global Average",flag:"🌍",current:{stunting:22.3,oos:10,dtp3:84,u5mr:37},s2000:33,h:5.7,r:""}:COUNTRIES[idx];
+
+  document.getElementById("insightText").innerHTML=isG?GLOBAL_INSIGHT:genInsight(c);
+
+  for(const k of Object.keys(INDICATORS)){
+    const m=INDICATORS[k];
+    animateValue(document.getElementById(`val-${k}`),c.current[k],m.unit);
+    const s=deltaVerdict(c.current[k],GLOBAL[k],k,isG);
+    const e=document.getElementById(`sub-${k}`);e.className="card-sub "+s.cls;e.textContent=s.text;
+  }
+
+  /* Forecaster */
+  const proj=project2030(c), hist=genTrend(c);
+  const gl=linreg(YEARS,[33,29,26,24,22.3]);
+  if(fcChart)fcChart.destroy();
+  fcChart=new Chart(document.getElementById("fcChart"),{type:"line",
+    data:{labels:[...YEARS,2030],datasets:[
+      {label:`${c.flag} ${c.name} (data)`,data:[...hist,null],borderColor:"#34d399",backgroundColor:"rgba(52,211,153,0.10)",fill:true,tension:.35,borderWidth:3,pointRadius:4,pointBackgroundColor:"#34d399"},
+      {label:"projection → 2030",data:[null,null,null,null,hist[4],proj],borderColor:"#34d399",borderDash:[6,6],fill:false,tension:.35,borderWidth:3,pointRadius:0},
+      {label:"🌍 Global avg trend",data:[33,29,26,24,22.3,Math.max(0,Math.round((gl.m*2030+gl.b)*10)/10)],borderColor:"#94a3b8",borderDash:[4,4],fill:false,tension:.35,borderWidth:2,pointRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{usePointStyle:true}}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:"stunting %"}}}}});
+
+  /* Twins */
+  if(!isG)renderTwins(idx); else document.getElementById("twinList").innerHTML=`<div class="twin-chip" style="cursor:default">Select a country to find its statistical twins 👆</div>`;
+
+  /* Happiness */
+  animateValue(document.getElementById("hap-val"),c.h,"",1);
+  document.getElementById("hap-emoji").textContent=hapEmoji(c.h);
+  document.getElementById("hap-rank").textContent=isG?"global benchmark":`#${hapRank(c.h)} of ${COUNTRIES.length} countries`;
+  document.getElementById("hap-title").textContent=isG?"The world's teenagers, on average":`Why teens in ${c.name} feel the way they do`;
+  document.getElementById("hap-why").innerHTML=isG
+    ?"The global youth average hides enormous gaps — from Finland's 7.8 to Afghanistan's 1.9. What separates them isn't money alone; it's safety, schooling and whether teen life feels chosen or forced."
+    :genWhy(c);
+  if(hapChart)hapChart.destroy();
+  const hl=[`${c.flag} ${c.name}`,"🌍 Global youth avg","🇫🇮 Happiest (Finland)","🇦🇫 Lowest (Afghanistan)"];
+  hapChart=new Chart(document.getElementById("hapChart"),{type:"bar",
+    data:{labels:hl,datasets:[{data:[c.h,5.7,7.8,1.9],
+      backgroundColor:hl.map((_,i)=>i===0?"rgba(52,211,153,0.85)":"rgba(148,163,184,0.45)"),borderRadius:8}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{min:0,max:10,title:{display:true,text:"life satisfaction (0–10)"}}}}});
+
+  /* Bar */
+  if(barChart)barChart.destroy();
+  const bd=[{label:`${c.flag} ${c.name}`,data:[c.current.stunting,c.current.oos,c.current.dtp3,c.current.u5mr],backgroundColor:"rgba(52,211,153,0.85)",hoverBackgroundColor:"#6ee7b7",borderRadius:10}];
+  if(!isG)bd.push({label:"🌍 Global Average",data:[GLOBAL.stunting,GLOBAL.oos,GLOBAL.dtp3,GLOBAL.u5mr],backgroundColor:"rgba(148,163,184,0.5)",borderRadius:10});
+  barChart=new Chart(document.getElementById("barChart"),{type:"bar",
+    data:{labels:["Stunting %","Out-of-school %","DTP3 Vaccine %","U5 Mortality /1k"],datasets:bd},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{usePointStyle:true}}},scales:{y:{beginAtZero:true}}}});
+
+  /* Line */
+  if(lineChart)lineChart.destroy();
+  const lineSets=[{label:`${c.flag} ${c.name}`,data:hist,borderColor:"#34d399",backgroundColor:"rgba(52,211,153,0.10)",fill:true,tension:.35,borderWidth:3,pointRadius:5,pointBackgroundColor:"#34d399"}];
+  if(!isG)lineSets.push({label:"🌍 Global Average",data:[33,29,26,24,22.3],borderColor:"#94a3b8",borderDash:[6,6],fill:false,tension:.35,borderWidth:2,pointRadius:4});
+  lineChart=new Chart(document.getElementById("lineChart"),{type:"line",
+    data:{labels:YEARS,datasets:lineSets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{usePointStyle:true}}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:"Stunting % (under 5)"}}}}});
+
+  scatterChart.data.datasets[1].data=isG?[]:[{x:c.current.dtp3,y:c.current.u5mr}];
+  scatterChart.update();
+
+  buildPlan(c,isG);
+  updateSim();
+  renderTable();
+  if(document.getElementById("crisis").classList.contains("open"))refreshCrisis(idx);
+}
+
+/* GO 🚀 */
+updateDashboard(byName("India"));
+</script>
+</body>
+</html>
